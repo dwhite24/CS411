@@ -22,7 +22,7 @@ def protype(request):
 
 
             # Takes in a zip code and returns the weather situation in temp_f, condition, and humidity
-            w = requestWeather(form.cleaned_data["zip"])
+            w = processZip(form.cleaned_data["zip"])
             print(form.cleaned_data["zip"])
             context = {'weather': w, "form": form}
         else:
@@ -70,9 +70,33 @@ def search_for_artist(token, artist_name):
     result = get(query_url, headers=headers)
     json_result = json.loads(result.content)
     print(json_result)
+    return json_result
+
+def search_by_genre(token, genre):
+    url = "https://api.spotify.com/v1/search"
+    headers = get_auth_header(token)
+    query = f"?q=genre:{genre}&type=track&limit=10&offset=5"
+
+    query_url = url + query
+    result = get(query_url, headers=headers)
+    json_result = json.loads(result.content)
+
+    return json_result
+
+def get_artist_genre(token, artist_name):
+    url = "https://api.spotify.com/v1/search"
+    headers = get_auth_header(token)
+    query = f"?q={artist_name}&type=artist&limit=1"
+
+    query_url = url + query
+    result = get(query_url, headers=headers)
+    json_result = json.loads(result.content)
+    genres = json_result['artists']['items'][0]['genres']
+    return genres
 
 token = get_token()
-search_for_artist(token, "ACDC")
+#search_for_artist(token, "ACDC")
+#search_by_genre(token, "Indie")
 
 def requestWeather(zipcode):
     # REMEMBER TO ENV THIS!!!!!
@@ -84,7 +108,23 @@ def requestWeather(zipcode):
     dictf = json.loads(r.text)
     humidity = dictf["current"]["humidity"]
     weather = dictf["current"]["condition"]["text"]
+    weatherid = dictf["current"]["condition"]["code"]
     temp_f = dictf["current"]["temp_f"]
-    weather_info = [temp_f, weather, humidity]
+    weather_info = [temp_f, weather, weatherid, humidity]
 
     return weather_info
+
+def processZip(zipcode):
+    weather = requestWeather(zipcode)
+    weatherId = weather[2]
+    if weatherId < 1006:
+        return search_by_genre(token, "Indie")
+    elif weatherId <1063:
+        return search_by_genre(token, "Pop")
+    elif weatherId < 1087:
+        return search_by_genre(token, "Rock")
+    elif weatherId == 1114 | weatherId == 1117 | (weatherId > 1209 & weatherId < 1238) | weatherId > 1248:
+        return search_by_genre(token, "Jazz")
+    else:
+        return search_by_genre(token, "Disco")
+    return weather

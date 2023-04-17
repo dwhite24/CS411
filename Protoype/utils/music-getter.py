@@ -41,6 +41,30 @@ def search_for_artist(token, artist_name):
     result = get(query_url, headers=headers)
     json_result = json.loads(result.content)
     print(json_result)
+    return json_result
+
+def search_by_genre(token, genre):
+    url = "https://api.spotify.com/v1/search"
+    headers = get_auth_header(token)
+    query = f"?q=genre:{genre}&type=track&limit=10&offset=5"
+
+    query_url = url + query
+    result = get(query_url, headers=headers)
+    json_result = json.loads(result.content)
+
+    return json_result
+
+def get_artist_genre(token, artist_name):
+    url = "https://api.spotify.com/v1/search"
+    headers = get_auth_header(token)
+    query = f"?q={artist_name}&type=artist&limit=1"
+
+    query_url = url + query
+    result = get(query_url, headers=headers)
+    json_result = json.loads(result.content)
+    genres = json_result['artists']['items'][0]['genres']
+    return genres
 
 token = get_token()
-search_for_artist(token, "ACDC")
+#search_for_artist(token, "ACDC")
+search_by_genre(token, "Pop")
