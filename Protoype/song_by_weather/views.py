@@ -5,6 +5,7 @@ from django import forms
 import requests
 import json
 import base64
+import random
 from requests import post, get
 # Create your views here.
 from django.http import HttpResponse
@@ -22,9 +23,14 @@ def protype(request):
 
 
             # Takes in a zip code and returns the weather situation in temp_f, condition, and humidity
-            w = processZip(form.cleaned_data["zip"])
+            w = requestWeather(form.cleaned_data["zip"])
+            track = processZip(form.cleaned_data["zip"])
             print(form.cleaned_data["zip"])
-            context = {'weather': w, "form": form}
+            track_uri = track
+            url = f'https://open.spotify.com/embed/track/{track_uri.split(":")[2]}'
+            print(url)
+            #context = {'weather': w, "form": form}
+            context = {'weather': w, "form": form, "embed_link": url}
         else:
             context = {'weather': 'invalid form', "form": form}
     else:
@@ -75,13 +81,14 @@ def search_for_artist(token, artist_name):
 def search_by_genre(token, genre):
     url = "https://api.spotify.com/v1/search"
     headers = get_auth_header(token)
-    query = f"?q=genre:{genre}&type=track&limit=10&offset=5"
+    query = f"?q=genre:{genre}&type=track&offset=5"
 
     query_url = url + query
     result = get(query_url, headers=headers)
     json_result = json.loads(result.content)
-
-    return json_result
+    song_name = json_result["tracks"]["items"][1]["name"]
+    song_preview = json_result["tracks"]["items"][1]["preview_url"]
+    return json_result#["tracks"]["items"][1]["preview_url"]
 
 def get_artist_genre(token, artist_name):
     url = "https://api.spotify.com/v1/search"
@@ -95,8 +102,6 @@ def get_artist_genre(token, artist_name):
     return genres
 
 token = get_token()
-#search_for_artist(token, "ACDC")
-#search_by_genre(token, "Indie")
 
 def requestWeather(zipcode):
     # REMEMBER TO ENV THIS!!!!!
@@ -118,13 +123,27 @@ def processZip(zipcode):
     weather = requestWeather(zipcode)
     weatherId = weather[2]
     if weatherId < 1006:
-        return search_by_genre(token, "Indie")
+        result = search_by_genre(token, "Indie")
+
     elif weatherId <1063:
-        return search_by_genre(token, "Pop")
+        result = search_by_genre(token, "Pop")
+
     elif weatherId < 1087:
-        return search_by_genre(token, "Rock")
+        result = search_by_genre(token, "Rock")
+ 
     elif weatherId == 1114 | weatherId == 1117 | (weatherId > 1209 & weatherId < 1238) | weatherId > 1248:
-        return search_by_genre(token, "Jazz")
+        result = search_by_genre(token, "Jazz")
+
     else:
-        return search_by_genre(token, "Disco")
-    return weather
+        result = search_by_genre(token, "Disco")
+    
+    return returnRandomSongURI(result)
+
+def returnRandomSongURI(list):
+    newList = list['tracks']['items']
+    num = random.randint(0,len(newList))
+    print("# of results: ", len(newList))
+    print(num)
+    return newList[num]['uri']
+
+
