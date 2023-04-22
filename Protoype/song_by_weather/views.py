@@ -30,7 +30,7 @@ def protype(request):
             url = f'https://open.spotify.com/embed/track/{track_uri.split(":")[2]}'
             print(url)
             #context = {'weather': w, "form": form}
-            context = {'weather': w, "form": form, "embed_link": url}
+            context = {'weather': "", "country": w[8], "location": w[6], "region": w[7],"temp_c": w[5], "temperature": w[0],"condition": w[1], "humidity": w[3], "icon": w[4],"form": form, "embed_link": url}
         else:
             context = {'weather': 'invalid form', "form": form}
     else:
@@ -114,8 +114,14 @@ def requestWeather(zipcode):
     humidity = dictf["current"]["humidity"]
     weather = dictf["current"]["condition"]["text"]
     weatherid = dictf["current"]["condition"]["code"]
+    weathericon = dictf["current"]["condition"]["icon"]
     temp_f = dictf["current"]["temp_f"]
-    weather_info = [temp_f, weather, weatherid, humidity]
+    temp_c = dictf["current"]["temp_c"]
+    location_name = dictf["location"]["name"]
+    location_region = dictf["location"]["region"]
+    location_country = dictf["location"]["country"]
+
+    weather_info = [temp_f, weather, weatherid, humidity, weathericon, temp_c, location_name, location_region, location_country]
 
     return weather_info
 
