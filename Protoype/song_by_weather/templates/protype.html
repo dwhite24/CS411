@@ -37,6 +37,23 @@
             height: 40px;
             outline: none;
         }
+        button {
+            padding: 10px 20px;
+            background-color: #1DB954;
+            color: #fff;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            height: 40px;
+            width: 140px;
+            margin-left: 10px;
+            outline: none;
+        }
+
+        button:hover{
+            background-color: #1ed760;
+        }
 
         input[type="submit"] {
             padding: 10px 20px;
@@ -138,6 +155,9 @@
 </head>
 <body>
     <div class="content-wrapper">
+
+
+
         <h1>Music From Weather</h1>
         <form action="/protype" method="post">
             {% csrf_token %}
@@ -159,6 +179,21 @@
             <iframe src="{{ embed_link }}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
         </div>
         {% endif %}
+
+        <h1>
+        {% load socialaccount %}
+
+        {% if user.is_authenticated %}
+  <label>You are logged in as {{ user.username }}</label>
+{% else %}
+        <button class="btn btn-outline-info">
+            <a href="{% provider_login_url 'google'%}?next=/">
+                Google
+            </a>
+        </button>
+{% endif %}
+
+        </h1>
     </div>
 </body>
 </html>
