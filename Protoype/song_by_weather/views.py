@@ -2,16 +2,28 @@ import os
 from django.shortcuts import render, redirect
 from django.template import loader
 from django import forms
+from django.db import models
+from .models import UserSave
 import requests
 import json
 import base64
 import random
 from requests import post, get
-# Create your views here.
 from django.http import HttpResponse
 
 def index(request):
     return render(request, 'protype.html')
+
+
+def profile(request):
+    try:
+        usersave = UserSave.objects.get(user=request.user)
+        urls = list(usersave.songs.split(" "))
+        context = {'usersave': urls}
+    except UserSave.DoesNotExist:
+        return render(request, 'profile.html')
+    return render(request, 'profile.html', context)
+
 
 class protypeForm(forms.Form):
     zip = forms.CharField(max_length=10)
@@ -31,6 +43,16 @@ def protype(request):
             print(url)
             #context = {'weather': w, "form": form}
             context = {'weather': "", "country": w[8], "location": w[6], "region": w[7],"temp_c": w[5], "temperature": w[0],"condition": w[1], "humidity": w[3], "icon": w[4],"form": form, "embed_link": url}
+
+            try:
+                usersave = UserSave.objects.get(user=request.user)
+                string = " " + url
+                usersave.songs += string
+                usersave.save()
+            except UserSave.DoesNotExist:
+                usersave = UserSave(user=request.user, songs=url)
+                usersave.save()
+
         else:
             context = {'weather': 'invalid form', "form": form}
     else:
