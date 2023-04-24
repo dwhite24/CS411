@@ -184,10 +184,15 @@
         {% if user.is_authenticated %}
   <label>You are logged in as {{ user.username }}</label>
             </br>
+        <button class="btn btn-outline-info">
+            <a href="profile">
+                Profile
+            </a>
+        </button>
 
         <button class="btn btn-outline-info">
             <a href="logout">
-                logout
+                Logout
             </a>
         </button>
 {% else %}

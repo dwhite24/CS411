@@ -1,4 +1,5 @@
 from django.db import models
+import jsonfield
 
 # Create your models here.
 
@@ -30,4 +31,6 @@ class User(models.Model):
     recommended_movies = models.ManyToManyField(Movie, max_length=2048)
     recommended_songs = models.ManyToManyField(Song, max_length=2048)
 
-
+class UserSave(models.Model):
+    user = models.CharField(max_length=64, null=False, primary_key=True)
+    songs = models.TextField()
