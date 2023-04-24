@@ -9,11 +9,11 @@ import json
 import base64
 import random
 from requests import post, get
-# Create your views here.
 from django.http import HttpResponse
 
 def index(request):
     return render(request, 'protype.html')
+
 
 def profile(request):
     try:
@@ -23,6 +23,7 @@ def profile(request):
     except UserSave.DoesNotExist:
         return render(request, 'profile.html')
     return render(request, 'profile.html', context)
+
 
 class protypeForm(forms.Form):
     zip = forms.CharField(max_length=10)
@@ -51,11 +52,6 @@ def protype(request):
             except UserSave.DoesNotExist:
                 usersave = UserSave(user=request.user, songs=url)
                 usersave.save()
-
-            #dbdata = SocialAccount.objects.get(user=request.user).extra_data
-            #dbdata.urls = url
-            #dbdata.save(['urls'])
-
 
         else:
             context = {'weather': 'invalid form', "form": form}
