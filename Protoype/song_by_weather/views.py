@@ -13,6 +13,9 @@ from django.http import HttpResponse
 def index(request):
     return render(request, 'protype.html')
 
+def profile(request):
+    return render(request, 'profile.html')
+
 class protypeForm(forms.Form):
     zip = forms.CharField(max_length=10)
 
