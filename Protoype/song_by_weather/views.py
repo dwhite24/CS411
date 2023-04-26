@@ -169,7 +169,7 @@ def processZip(zipcode):
 
 def returnRandomSongURI(list):
     newList = list['tracks']['items']
-    num = random.randint(0,len(newList))
+    num = random.randint(0,len(newList)-1)
     print("# of results: ", len(newList))
     print(num)
     return newList[num]['uri']

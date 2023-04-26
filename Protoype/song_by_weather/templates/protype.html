@@ -96,11 +96,12 @@
         .weather-player {
             margin-top: 50px;
             text-align: center;
+            flex: 2;
         }
 
         iframe {
             border-radius: 12px;
-            width: 100%;
+            width: 150%;
             height: 80vh;
             max-height: 500px;
         }
@@ -117,6 +118,7 @@
             background-color: #1DB954;
             border-radius: 50px;
         }
+
         .weather {
             background-color: #f2f2f2;
             padding: 20px;
@@ -124,11 +126,13 @@
             box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
             text-align: center;
             margin-top: 50px;
-            max-width: 500px;
+            max-height: 400px;
             margin-left: auto;
             margin-right: auto;
             color: #333;
+            flex: 1;
         }
+
         .weather img {
             display: block;
             margin-left: auto;
@@ -136,45 +140,60 @@
             width: 100px;
             height: 100px;
         }
+
         .weather h2 {
             font-size: 36px;
             margin-bottom: 0;
             margin-top: 10px;
         }
+
         .weather h3 {
             font-size: 24px;
             margin-top: 5px;
             margin-bottom: 10px;
         }
+
         .weather p {
             font-size: 18px;
             margin-top: 10px;
             margin-bottom: 10px;
         }
+
         .login{
             position: absolute;
             top: 0px;
             right: 50px;
         }
+
         .webtitle{
             position: absolute;
             top: 5px;
             left: 50px;
         }
+
         .search {
             display: flex;
             flex-wrap: wrap;
           }
+
         .search-question {
             flex: 1;
           }
+
         .search-bar {
             flex: 2;
           }
+
         .placeholder-divider {
             height: 150px;
             border-top: 1px ;
             border-bottom: 1px ;
+        }
+        .main-content{
+            position: absolute;
+            display: flex;
+            flex-wrap: wrap;
+            left: 200px;
         }
     </style>
 </head>
@@ -224,19 +243,21 @@
                 </div>
             </div>
         </form>
-        {% if form.zip %}
-        <div class="weather">
-            <img src="{{ icon }}" alt="{{ condition }}">
-            <h2>{{ location }}, {{ region }}, {{ country }}</h2>
-            <h3>{{ condition }}</h3>
-            <p>Temperature: {{ temperature }}&#8457; / {{ temp_c }}&#8451;</p>
-            <p>Humidity: {{ humidity }}%</p>
+        <div class="main-content">
+            {% if form.zip %}
+            <div class="weather">
+                <img src="{{ icon }}" alt="{{ condition }}">
+                <h2>{{ location }}, {{ region }}, {{ country }}</h2>
+                <h3>{{ condition }}</h3>
+                <p>Temp: {{ temperature }}&#8457; / {{ temp_c }}&#8451;</p>
+                <p>Humidity: {{ humidity }}%</p>
+            </div>
+            <div class="weather-player">
+                <p>{{ weather }}</p>
+                <iframe src="{{ embed_link }}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+            </div>
+            {% endif %}
         </div>
-        <div class="weather-player">
-            <p>{{ weather }}</p>
-            <iframe src="{{ embed_link }}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
-        </div>
-        {% endif %}
     </div>
 </body>
 </html>
