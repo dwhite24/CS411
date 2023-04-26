@@ -108,8 +108,8 @@ def search_by_genre(token, genre):
     query_url = url + query
     result = get(query_url, headers=headers)
     json_result = json.loads(result.content)
-    #song_name = json_result["tracks"]["items"][1]["name"]
-    #song_preview = json_result["tracks"]["items"][1]["preview_url"]
+    song_name = json_result["tracks"]["items"][1]["name"]
+    song_preview = json_result["tracks"]["items"][1]["preview_url"]
     return json_result#["tracks"]["items"][1]["preview_url"]
 
 def get_artist_genre(token, artist_name):
