@@ -154,14 +154,35 @@
         .login{
             position: absolute;
             top: 5px;
-            right: 10px;
+            right: 50px;
+        }
+        .webtitle{
+            position: absolute;
+            top: 5px;
+            left: 50px;
+        }
+        .search {
+            display: flex;
+            flex-wrap: wrap;
+          }
+        .search-question {
+            flex: 1;
+          }
+        .search-bar {
+            flex: 2;
+          }
+        .placeholder-divider {
+            height: 100px;
+            border-top: 1px ;
+            border-bottom: 1px ;
         }
     </style>
 </head>
 <body>
     <div class="content-wrapper">
-
-        <h1>Music From Weather</h1>
+        <div class="webtitle">
+            <h1>Music From Weather</h1>
+        </div>
         <div class = "login">
             <h1>
                 {% load socialaccount %}
@@ -189,12 +210,19 @@
                 {% endif %}
             </h1>
         </div>
+        <div class="placeholder-divider"></div>
         <form action="/app" method="post">
             {% csrf_token %}
-            <label for="zip">Enter your zip code:</label>
-            <br>
-            <input id="zip" type="text" name="zip" placeholder="Enter your zip code...">
-            <input type="submit" value="Get Weather">
+            <div class="search">
+                <div class="search-question">
+                    <label for="zip">Enter your zip code:</label>
+                </div>
+                <br>
+                <div class = "search-bar">
+                    <input id="zip" type="text" name="zip" placeholder="Enter your zip code...">
+                    <input type="submit" value="Get Weather">
+                </div>
+            </div>
         </form>
         {% if form.zip %}
         <div class="weather">
