@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.template import loader
 from django import forms
 from django.db import models
-from .models import UserSave
+from .models import UserSave, User, Song, Musician
 import requests
 import json
 import base64
@@ -11,16 +11,19 @@ import random
 from requests import post, get
 from django.http import HttpResponse
 
+
 def index(request):
     return render(request, 'protype.html')
 
 
 def profile(request):
     try:
-        usersave = UserSave.objects.get(user=request.user)
-        urls = list(usersave.songs.split(" "))
+        usersave = UserSave.objects.get(user=User.objects.get(email=request.user.email))
+        urls = usersave.IDs.all()
+        print(urls)
         context = {'usersave': urls}
-    except UserSave.DoesNotExist:
+    except (User.DoesNotExist, AttributeError, UserSave.DoesNotExist) as error:
+        print("?")
         return render(request, 'profile.html')
     return render(request, 'profile.html', context)
 
@@ -28,11 +31,11 @@ def profile(request):
 class protypeForm(forms.Form):
     zip = forms.CharField(max_length=10)
 
+
 def protype(request):
     if request.method == 'POST':
         form = protypeForm(request.POST)
         if form.is_valid():
-
 
             # Takes in a zip code and returns the weather situation in temp_f, condition, and humidity
             w = requestWeather(form.cleaned_data["zip"])
@@ -41,17 +44,43 @@ def protype(request):
             track_uri = track
             url = f'https://open.spotify.com/embed/track/{track_uri.split(":")[2]}'
             print(url)
-            #context = {'weather': w, "form": form}
-            context = {'weather': "", "country": w[8], "location": w[6], "region": w[7],"temp_c": w[5], "temperature": w[0],"condition": w[1], "humidity": w[3], "icon": w[4],"form": form, "embed_link": url}
-
+            # context = {'weather': w, "form": form}
+            context = {'weather': "", "country": w[8], "location": w[6], "region": w[7], "temp_c": w[5],
+                       "temperature": w[0], "condition": w[1], "humidity": w[3], "icon": w[4], "form": form,
+                       "embed_link": url}
             try:
-                usersave = UserSave.objects.get(user=request.user)
-                string = " " + url
-                usersave.songs += string
-                usersave.save()
-            except UserSave.DoesNotExist:
-                usersave = UserSave(user=request.user, songs=url)
-                usersave.save()
+                print(request.user.email)
+                a = User.objects.get(email=request.user.email)
+                user_exists = True
+            except AttributeError:
+                user_exists = False
+            except User.DoesNotExist:
+                user_exists = True
+            if user_exists:
+                try:
+                    u = User.objects.get(email=request.user.email)
+                except User.DoesNotExist:
+                    u = User(email=request.user.email)
+                    u.save()
+                try:
+                    usersave = UserSave.objects.get(user=u)
+                    try:
+                        s = Song.objects.get(url=url)
+                    except Song.DoesNotExist:
+                        s = Song(url=url)
+                        s.save()
+                    usersave.IDs.add(s)
+                    usersave.save()
+                except UserSave.DoesNotExist:
+                    try:
+                        s = Song.objects.get(url=url)
+                    except Song.DoesNotExist:
+                        s = Song(url=url)
+                        s.save()
+                    usersave = UserSave(user=u)
+                    usersave.save()
+                    usersave.IDs.add(s)
+                    usersave.save()
 
         else:
             context = {'weather': 'invalid form', "form": form}
@@ -59,18 +88,21 @@ def protype(request):
         form = protypeForm()
         context = {'weather': 'none', "form": form}
 
-
     return render(request, 'protype.html', context=context)
 
+
 def requestMusic(weather_info):
-    #This function should return the music based on the weather
+    # This function should return the music based on the weather
     return NotImplemented
 
-#NEED TO ENV THIS
-client_id = "c6dd25d2b96d44e09597035c532b1101"#os.getenv("CLIENT_ID")
-client_secret = "562d9f95ab8a4c218416405f42805b6d"#os.getenv("CLIENT_SECRET")
+
+# NEED TO ENV THIS
+client_id = "c6dd25d2b96d44e09597035c532b1101"  # os.getenv("CLIENT_ID")
+client_secret = "562d9f95ab8a4c218416405f42805b6d"  # os.getenv("CLIENT_SECRET")
+
+
 def get_token():
-    #gets spotify api token
+    # gets spotify api token
     auth_string = client_id + ":" + client_secret
     auth_bytes = auth_string.encode("utf-8")
     auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
@@ -86,8 +118,10 @@ def get_token():
     token = json_result["access_token"]
     return token
 
+
 def get_auth_header(token):
     return {"Authorization": "Bearer " + token}
+
 
 def search_for_artist(token, artist_name):
     url = "https://api.spotify.com/v1/search"
@@ -100,6 +134,7 @@ def search_for_artist(token, artist_name):
     print(json_result)
     return json_result
 
+
 def search_by_genre(token, genre):
     url = "https://api.spotify.com/v1/search"
     headers = get_auth_header(token)
@@ -110,7 +145,8 @@ def search_by_genre(token, genre):
     json_result = json.loads(result.content)
     song_name = json_result["tracks"]["items"][1]["name"]
     song_preview = json_result["tracks"]["items"][1]["preview_url"]
-    return json_result#["tracks"]["items"][1]["preview_url"]
+    return json_result  # ["tracks"]["items"][1]["preview_url"]
+
 
 def get_artist_genre(token, artist_name):
     url = "https://api.spotify.com/v1/search"
@@ -123,7 +159,9 @@ def get_artist_genre(token, artist_name):
     genres = json_result['artists']['items'][0]['genres']
     return genres
 
+
 token = get_token()
+
 
 def requestWeather(zipcode):
     # REMEMBER TO ENV THIS!!!!!
@@ -143,9 +181,11 @@ def requestWeather(zipcode):
     location_region = dictf["location"]["region"]
     location_country = dictf["location"]["country"]
 
-    weather_info = [temp_f, weather, weatherid, humidity, weathericon, temp_c, location_name, location_region, location_country]
+    weather_info = [temp_f, weather, weatherid, humidity, weathericon, temp_c, location_name, location_region,
+                    location_country]
 
     return weather_info
+
 
 def processZip(zipcode):
     weather = requestWeather(zipcode)
@@ -153,23 +193,24 @@ def processZip(zipcode):
     if weatherId < 1006:
         result = search_by_genre(token, "Indie")
 
-    elif weatherId <1063:
+    elif weatherId < 1063:
         result = search_by_genre(token, "Pop")
 
     elif weatherId < 1087:
         result = search_by_genre(token, "Rock")
- 
+
     elif weatherId == 1114 | weatherId == 1117 | (weatherId > 1209 & weatherId < 1238) | weatherId > 1248:
         result = search_by_genre(token, "Jazz")
 
     else:
         result = search_by_genre(token, "Disco")
-    
+
     return returnRandomSongURI(result)
+
 
 def returnRandomSongURI(list):
     newList = list['tracks']['items']
-    num = random.randint(0,len(newList)-1)
+    num = random.randint(0, len(newList) - 1)
     print("# of results: ", len(newList))
     print(num)
     return newList[num]['uri']
