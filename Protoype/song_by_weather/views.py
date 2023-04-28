@@ -103,7 +103,7 @@ def search_for_artist(token, artist_name):
 def search_by_genre(token, genre):
     url = "https://api.spotify.com/v1/search"
     headers = get_auth_header(token)
-    query = f"?q=genre:{genre}&type=track&offset=5"
+    query = f"?q=genre:{genre}&type=track"
 
     query_url = url + query
     result = get(query_url, headers=headers)
