@@ -13,15 +13,54 @@ from django.http import HttpResponse
 
 
 def index(request):
-    return render(request, 'protype.html')
+    return redirect('/app')
+    #return render(request, 'protype.html')
+
+
+class profileForm(forms.Form):
+    first_name = forms.CharField(max_length=64, required=False)
+    last_name = forms.CharField(max_length=64, required=False)
+    age = forms.IntegerField(required=False)
+    hometown = forms.IntegerField(required=False)
+    dob = forms.DateField(required=False)
 
 
 def profile(request):
+    print("28")
+    if request.method == 'POST':
+        print(30)
+        form = profileForm(request.POST)
+        print(form.is_valid())
+        print(form.errors)
+        if form.is_valid():
+            print("hi")
+            first_name = form.cleaned_data["first_name"]
+            last_name = form.cleaned_data["last_name"]
+            age = form.cleaned_data["age"]
+            hometown = form.cleaned_data["hometown"]
+            dob = form.cleaned_data["dob"]
+            try:
+                u = User.objects.get(email=request.user.email)
+                u.first_name = first_name
+                u.last_name = last_name
+                u.age = age
+                u.hometown = hometown
+                u.dob = dob
+                u.save()
+            except User.DoesNotExist:
+                return redirect('/')
+        else:
+            form = profileForm(request.POST)
+    else:
+        form = profileForm(request.POST)
     try:
-        usersave = UserSave.objects.get(user=User.objects.get(email=request.user.email))
+        u = User.objects.get(email=request.user.email)
+        usersave = UserSave.objects.get(user=u)
         urls = usersave.IDs.all()
         print(urls)
-        context = {'usersave': urls}
+        print(u.dob)
+
+        context = {'usersave': urls, "first_name": u.first_name, "last_name": u.last_name, "age": u.age, "hometown": u.hometown, "dob": str(u.dob), "form":form}
     except (User.DoesNotExist, AttributeError, UserSave.DoesNotExist) as error:
         print("?")
         return render(request, 'profile.html')
@@ -60,7 +99,7 @@ def protype(request):
                 try:
                     u = User.objects.get(email=request.user.email)
                 except User.DoesNotExist:
-                    u = User(email=request.user.email)
+                    u = User(email=request.user.email, first_name=request.user)
                     u.save()
                 try:
                     usersave = UserSave.objects.get(user=u)
@@ -85,9 +124,52 @@ def protype(request):
         else:
             context = {'weather': 'invalid form', "form": form}
     else:
+        print("?")
         form = protypeForm()
-        context = {'weather': 'none', "form": form}
-
+        try:
+            print(request.user.email)
+            a = User.objects.get(email=request.user.email)
+            user_exists = True
+            if a.hometown != 00000:
+                w = requestWeather(a.hometown)
+                track = processZip(a.hometown)
+                track_uri = track
+                url = f'https://open.spotify.com/embed/track/{track_uri.split(":")[2]}'
+                print(url)
+                # context = {'weather': w, "form": form}
+                context = {'weather': "", "country": w[8], "location": w[6], "region": w[7], "temp_c": w[5],
+                           "temperature": w[0], "condition": w[1], "humidity": w[3], "icon": w[4], "form": form,
+                           "embed_link": url}
+        except (AttributeError, User.DoesNotExist) as e:
+            user_exists = False
+        if user_exists:
+            try:
+                u = User.objects.get(email=request.user.email)
+            except User.DoesNotExist:
+                u = User(email=request.user.email, first_name=request.user)
+                u.save()
+            try:
+                usersave = UserSave.objects.get(user=u)
+                try:
+                    s = Song.objects.get(url=url)
+                except Song.DoesNotExist:
+                    s = Song(url=url)
+                    s.save()
+                usersave.IDs.add(s)
+                usersave.save()
+            except UserSave.DoesNotExist:
+                try:
+                    s = Song.objects.get(url=url)
+                except Song.DoesNotExist:
+                    s = Song(url=url)
+                    s.save()
+                usersave = UserSave(user=u)
+                usersave.save()
+                usersave.IDs.add(s)
+                usersave.save()
+        else:
+            context = {'weather': 'none', "form": form}
+    print("??????")
     return render(request, 'protype.html', context=context)
 
 

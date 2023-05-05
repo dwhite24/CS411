@@ -169,6 +169,50 @@
 
         {% load socialaccount %}
         {% if user.is_authenticated %}
+
+        <h3>User Information</h3>
+         <form action="/profile" method="POST">
+            {% csrf_token %}
+            <div class="search">
+                <div class="search-question">
+                    <label for="first_name">First Name:</label>
+                </div>
+                <br>
+                <div class = "search-bar">
+                    <input id="first_name" type="text" name="first_name" value={{first_name}}>
+                </div>
+                <div class="search-question">
+                    <label for="last_name">Last Name:</label>
+                </div>
+                <br>
+                <div class = "search-bar">
+                    <input id="last_name" type="text" name="last_name" value={{last_name}}>
+                </div>
+                <div class="search-question">
+                    <label for="age">Age:</label>
+                </div>
+                <br>
+                <div class = "search-bar">
+                    <input id="age" type="text" name="age" value={{age}} >
+                </div>
+                <div class="search-question">
+                    <label for="hometown">Home Town Zip code:</label>
+                </div>
+                <br>
+                <div class = "search-bar">
+                    <input id="hometown" type="text" name="hometown" value={{hometown}}>
+                </div>
+                <div class="search-question">
+                    <label for="dob">Date of Birth:</label>
+                </div>
+                <br>
+                <div class = "search-bar">
+                    <input id="dob" type="date" name="dob" value={{dob}}>
+                </div>
+                <input type="submit" value="Update Profile">
+            </div>
+         </form>
+    <br>
   <h3>Your saved results:</h3>
 
 {% for url in usersave %}
