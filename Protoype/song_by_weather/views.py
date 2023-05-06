@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from django.shortcuts import render, redirect
 from django.template import loader
 from django import forms
@@ -11,6 +12,9 @@ import random
 from requests import post, get
 from django.http import HttpResponse
 
+load_dotenv()
+
+# All keys are refreshed, previously pushed keys are no longer valid.
 
 def index(request):
     return redirect('/app')
@@ -177,10 +181,8 @@ def requestMusic(weather_info):
     # This function should return the music based on the weather
     return NotImplemented
 
-
-# NEED TO ENV THIS
-client_id = "c6dd25d2b96d44e09597035c532b1101"  # os.getenv("CLIENT_ID")
-client_secret = "562d9f95ab8a4c218416405f42805b6d"  # os.getenv("CLIENT_SECRET")
+client_id = os.environ.get('CLIENT_ID')
+client_secret = os.environ.get('CLIENT_SECRET')
 
 
 def get_token():
@@ -246,8 +248,7 @@ token = get_token()
 
 
 def requestWeather(zipcode):
-    # REMEMBER TO ENV THIS!!!!!
-    apikey = "dd397dd244344686bcc185144233103"
+    apikey = os.environ.get('WEATHER_API_KEY')
 
     requestlink = "https://api.weatherapi.com/v1/current.json?key={}&q={}&aqi=yes".format(apikey, zipcode)
     r = requests.get(requestlink)
